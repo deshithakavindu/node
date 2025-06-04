@@ -89,7 +89,7 @@ app.post("/login-user", async (req, res) => {
 
 
 
-app.post("/userData", async (req, res) => {
+app.get("/userData", async (req, res) => {
   const { token } = req.body;
 
   try {
