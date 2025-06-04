@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "5000:5000"  
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb+srv://deshi:deshi@cluster0.5hecv.mongodb.net/node?retryWrites=true&w=majority&appName=Node
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
