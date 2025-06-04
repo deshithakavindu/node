@@ -1,4 +1,3 @@
-
 const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
@@ -9,17 +8,7 @@ app.use(express.json());
 app.use(cors());
 
 // MongoDB connection
-const mongoUrl = process.env.MONGODB_URI;
-
-if (!mongoUrl) {
-  console.error("MONGODB_URI environment variable is not set");
-  process.exit(1);
-}
-
-mongoose.connect(mongoUrl, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+const mongoUrl = process.env.MONGODB_URI || "mongodb+srv://deshithakavindu2729:deshi@cluster0.r65ekb5.mongodb.net/node?retryWrites=true&w=majority&appName=Cluster0";mongoose.connect(mongoUrl)
   .then(() => console.log("Connected to database"))
   .catch(e => console.error("Connection error:", e));
 
@@ -83,22 +72,13 @@ app.post("/login-user", async (req, res) => {
 });
 
 app.get("/userData", async (req, res) => {
-  const { userId } = req.query;
-
-  if (!userId) {
-    return res.status(400).json({ 
-      status: "error",
-      message: "User ID must be provided" 
-    });
-  }
-
   try {
-    const userData = await User.findById(userId).select('-password');
+    const userData = await User.find().select('-password');
     
-    if (!userData) {
+    if (!userData || userData.length === 0) {
       return res.status(404).json({ 
         status: "error", 
-        message: "User not found" 
+        message: "No users found" 
       });
     }
 
@@ -114,23 +94,23 @@ app.get("/userData", async (req, res) => {
     });
   }
 });
-
 app.post("/upload-image", async (req, res) => {
-  const { userId, fname, lname, base64 } = req.body;
+  const { userId, email, fname, lname, base64 } = req.body;
 
-  if (!userId) {
-    return res.status(400).send({ status: "error", message: "User ID must be provided" });
+  if (!userId || !email) {
+    return res.status(400).send({ status: "error", message: "User ID and email must be provided" });
   }
 
   try {
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(400).send({ status: "error", message: "Invalid user ID" });
+    if (!user || user.email !== email) {
+      return res.status(400).send({ status: "error", message: "Invalid user credentials" });
     }
 
     const newImage = new Images({
       image: base64,
       userId,
+      email,
       fname,
       lname
     });
