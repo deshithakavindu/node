@@ -1,3 +1,4 @@
+
 const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
@@ -8,7 +9,17 @@ app.use(express.json());
 app.use(cors());
 
 // MongoDB connection
-const mongoUrl = process.env.MONGODB_URI || "mongodb+srv://deshithakavindu2729:deshi@cluster0.r65ekb5.mongodb.net/node?retryWrites=true&w=majority&appName=Cluster0";mongoose.connect(mongoUrl)
+const mongoUrl = process.env.MONGODB_URI;
+
+if (!mongoUrl) {
+  console.error("MONGODB_URI environment variable is not set");
+  process.exit(1);
+}
+
+mongoose.connect(mongoUrl, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
   .then(() => console.log("Connected to database"))
   .catch(e => console.error("Connection error:", e));
 
@@ -72,17 +83,17 @@ app.post("/login-user", async (req, res) => {
 });
 
 app.get("/userData", async (req, res) => {
-  const { email } = req.query;
+  const { userId } = req.query;
 
-  if (!email) {
+  if (!userId) {
     return res.status(400).json({ 
       status: "error",
-      message: "Email must be provided" 
+      message: "User ID must be provided" 
     });
   }
 
   try {
-    const userData = await User.findOne({ email }).select('-password');
+    const userData = await User.findById(userId).select('-password');
     
     if (!userData) {
       return res.status(404).json({ 
@@ -105,22 +116,21 @@ app.get("/userData", async (req, res) => {
 });
 
 app.post("/upload-image", async (req, res) => {
-  const { userId, email, fname, lname, base64 } = req.body;
+  const { userId, fname, lname, base64 } = req.body;
 
-  if (!userId || !email) {
-    return res.status(400).send({ status: "error", message: "User ID and email must be provided" });
+  if (!userId) {
+    return res.status(400).send({ status: "error", message: "User ID must be provided" });
   }
 
   try {
     const user = await User.findById(userId);
-    if (!user || user.email !== email) {
-      return res.status(400).send({ status: "error", message: "Invalid user credentials" });
+    if (!user) {
+      return res.status(400).send({ status: "error", message: "Invalid user ID" });
     }
 
     const newImage = new Images({
       image: base64,
       userId,
-      email,
       fname,
       lname
     });
