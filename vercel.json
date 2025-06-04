@@ -9,11 +9,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/app.js"
+      "dest": "app.js"
     }
-  ],
-  "env": {
-    "JWT_SECRET": "ghds33dfh9hbhdbsjjjjh888567857",
-    "MONGODB_URI": "mongodb+srv://deshithakavindu2729:deshi@cluster0.r65ekb5.mongodb.net/node?retryWrites=true&w=majority&appName=Cluster0"
-  }
+  ]
 }
